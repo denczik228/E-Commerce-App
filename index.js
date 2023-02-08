@@ -2,7 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv').config();
 const authRouter = require("./routes/authRoute.js");
-const { notFound, errorHandler } = require("./middlewares/errorHandler.js");
+const { errorHandler } = require("./middlewares/errorHandler.js");
+const { authMiddleware } = require('./middlewares/authMiddleware.js');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -13,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/api/user', authRouter);
 
 //----------from middleware(after routes!)
-app.use(notFound);
+app.use(authMiddleware);
 app.use(errorHandler);
 
 //connection to db
