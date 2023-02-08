@@ -55,7 +55,7 @@ const getUser = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-})
+});
 
 //delete user
 const delUser = asyncHandler(async (req, res) => {
