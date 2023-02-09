@@ -1,5 +1,4 @@
 const express = require('express');
-const { unblockUser, blockUser} = require('../controllers/userController');
 const {
   createUser,
   loginUser,
@@ -7,6 +6,8 @@ const {
   getUser,
   updateUser,
   delUser,
+  unblockUser,
+  blockUser
 } = require("../controllers/userController");
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 const router = express.Router();
