@@ -13,7 +13,7 @@ const createProduct = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new error(error)
     }
-})
+});
 
 const updateProduct = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -45,15 +45,40 @@ const getProduct = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new error(error)
     }
-})
+});
 
 const getAllProducts = asyncHandler(async (req, res) => {
+    //console.log(req.query);
     try {
-        const allProducts = await Product.find();
+        let queryObj = { ...req.query };
+        const excludeFields = ['page', 'sort', 'limit', 'fields'];
+        excludeFields.forEach((el) => delete queryObj(el));
+        console.log(queryObj);
+
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
+        console.log(JSON.parse(queryStr));
+
+        const query = Product.find(JSON.parse(queryStr));
+        const allProducts = await query;
         res.json(allProducts);
     } catch (error) {
         throw new error(error);
     }
-})
+});
 
-module.exports = { createProduct, getProduct, getAllProducts, updateProduct };
+const deleteProduct = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    validateMongoDbId(id);
+    try {
+        const delProd = await Product.findByIdAndDelete(id);
+        res.json(delProd);
+    } catch (error) {
+        throw new Error(error);
+    }
+
+});
+
+
+
+module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct };
