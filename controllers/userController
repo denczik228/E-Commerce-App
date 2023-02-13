@@ -4,6 +4,9 @@ const { generateToken } = require("../config/jwtToken.js");
 const validateMongDBid = require("../utils/validateMonDBid.js");
 const refreshToken = require("../config/refreshToken.js");
 const jwt = require('jsonwebtoken');
+const sendEmail = require("./emailController");
+const crypto = require('crypto');
+const { error } = require("console");
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
@@ -212,6 +215,54 @@ const updatePassword = asyncHandler(async (req, res) => {
   }
 })
 
+const forgotPasswordToken = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  //console.log(req.body);
+  const user = await User.findOne({ email: req.body.email });
+  //console.log(user);
+  if (!user) throw new Error(`User wasnt found with email like ${email}`)
+  try {
+    const token = await user.createPasswordResetToken();
+    //console.log(token);
+
+    await user.save();
+
+    const resetURL = `Hello, please follow this link to reset your password.This link is valid till 10 min from now.
+    <a href='http://localhost:3000/api/user/reset-password/${token}'>Click here</a>`;
+    
+    const data = {
+      to: email,
+      text: `Yo bro ${user.firstname}`,
+      subject: 'Your forgot password link',
+      html: resetURL,
+    }
+    console.log(data);
+
+    sendEmail(data);
+    res.json(token);
+
+  } catch (error) {
+    throw new error(error);
+  }
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const { token } = req.params;
+  //console.log(password);
+
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+  if (!user) throw new error("10 min expired, try again");
+  user.password = password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  res.json(user);
+})
 
 module.exports = {
   createUser,
@@ -225,4 +276,6 @@ module.exports = {
   handleRefreshToken,
   logOut,
   updatePassword,
+  forgotPasswordToken,
+  resetPassword
 };
