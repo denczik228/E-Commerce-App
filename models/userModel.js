@@ -53,16 +53,29 @@ var userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    passwordChangedAt: { type: Date },
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
   },
   { timestamps: true }
 );
 
 userSchema.pre('save', async function (next) {
-  const salt = await bcrypt.genSaltSync (10);
+  if (!this.isModified('password')) {
+    next()
+  }
+  const salt = await bcrypt.genSaltSync(10);
   this.password = await bcrypt.hash(this.password, salt);
 })
 userSchema.methods.isPasswordMatched = async function (enteredPassword){
   return await bcrypt.compare(enteredPassword,this.password);
+}
+
+userSchema.methods.createPasswordResetToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetExpires = Date.now() + 30 * 60 * 1000;//10 min
+  return resetToken
 }
 //Export the model
 module.exports = mongoose.model('User', userSchema);
