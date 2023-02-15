@@ -4,6 +4,7 @@ const dotenv = require('dotenv').config();
 const authRouter = require("./routes/authRoute.js");
 const productRouter = require('./routes/productRoute');
 const blogRouter = require('./routes/blogRoute');
+const categoryRouter = require('./routes/categoryRoute');
 const { errorHandler, notFound } = require("./middlewares/errorHandler.js");
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
@@ -20,6 +21,7 @@ app.use(morgan('dev'));
 app.use('/api/user', authRouter);
 app.use("/api/product", productRouter);
 app.use('/api/blog', blogRouter);
+app.use('/api/category', categoryRouter);
 //----------from middleware(after routes!)
 app.use(notFound);
 app.use(errorHandler);
