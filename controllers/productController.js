@@ -185,4 +185,5 @@ const productRating = asyncHandler(async (req, res) => {
   }
 });
 
+
 module.exports = { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, addToWishList, productRating };
